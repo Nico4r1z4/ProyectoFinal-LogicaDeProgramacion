@@ -88,4 +88,36 @@ public class ArchivoUtil {
             escribirLineas(ARCHIVO_RESERVAS, r);
         }
     }
+
+    // Para los Vehiculos:
+    public static List<Vehiculos> leerVehiculos() {
+        List<Vehiculos> vehiculos = new ArrayList<>();
+        for (String linea : leerLineas(ARCHIVO_VEHICULOS)) {
+            try {
+                String[] d = linea.split("\\|");
+                Vehiculos v = new Vehiculos();
+                v.placa = d[0];
+                v.marca = d[1];
+                v.modelo = d[2];
+                v.anio = Integer.parseInt(d[3]);
+                v.tipo = d[4];
+                v.tarifa = Double.parseDouble(d[5]);
+                v.estado = d[6];
+                v.foto = d[7];
+                vehiculos.add(v);
+            } catch (Exception e) {
+                System.out.println("Linea mala en vehiculos.txt: " + linea);
+            }
+        }
+        return vehiculos;
+    }
+
+    public static void guardarVehiculos(List<Vehiculos> vehiculos) {
+        List<String> lineas = new ArrayList<>();
+        for (Vehiculos v : vehiculos) {
+            lineas.add(v.placa + "|" + v.marca + "|" + v.modelo + "|" + v.anio + "|" + v.tipo + "|"
+                    + v.tarifa + "|" + v.estado + "|" + v.foto);
+        }
+        escribirLineas(ARCHIVO_VEHICULOS, lineas);
+    }
 }
