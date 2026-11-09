@@ -120,4 +120,29 @@ public class ArchivoUtil {
         }
         escribirLineas(ARCHIVO_VEHICULOS, lineas);
     }
+
+    public static List<Cliente> leerClientes() {
+        List<Cliente> clientes = new ArrayList<>();
+        for (String linea : leerLineas(ARCHIVO_CLIENTES)) {
+            try {
+                String[] d = linea.split("\\|");
+                Cliente c = new Cliente();
+                c.documento = d[0];
+                c.nombre = d[1];
+                c.telefono = d[2];
+                clientes.add(c);
+            } catch (Exception e) {
+                System.out.println("Línea mala en clientes.txt: " + linea);
+            }
+        }
+        return clientes;
+    }
+
+    public static void guardarClientes(List<Cliente> clientes) {
+        List<String> lineas = new ArrayList<>();
+        for (Cliente c : clientes) {
+            lineas.add(c.documento + "|" + c.nombre + "|" + c.telefono);
+        }
+        escribirLineas(ARCHIVO_CLIENTES, lineas);
+    }
 }
