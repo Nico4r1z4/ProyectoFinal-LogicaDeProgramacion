@@ -24,7 +24,9 @@ public class MainLayout extends AppLayout {
 
         Button btnClientes = new Button("Clientes", e -> UI.getCurrent().navigate(ClientesView.class));
 
-        VerticalLayout menu = new VerticalLayout(btnVehiculos, btnClientes);
+        Button btnReservas = new Button("Reservas", e -> UI.getCurrent().navigate(ReservasView.class));
+
+        VerticalLayout menu = new VerticalLayout(btnVehiculos, btnClientes, btnReservas);
         addToDrawer(menu);
     }
 }

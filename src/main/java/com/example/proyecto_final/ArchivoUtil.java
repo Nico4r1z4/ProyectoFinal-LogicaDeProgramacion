@@ -145,4 +145,36 @@ public class ArchivoUtil {
         }
         escribirLineas(ARCHIVO_CLIENTES, lineas);
     }
+
+    public static List<Reserva> leerReservas() {
+        List<Reserva> reservas = new ArrayList<>();
+        for (String linea : leerLineas(ARCHIVO_RESERVAS)) {
+            try {
+                String[] d = linea.split("\\|");
+                Reserva r = new Reserva();
+                r.id = d[0];
+                r.documento = d[1];
+                r.placa = d[2];
+                r.inicio = LocalDate.parse(d[3]);
+                r.fin = LocalDate.parse(d[4]);
+                r.extras = d[5];
+                r.costo = Double.parseDouble(d[6]);
+                r.estado = d[7];
+                r.multa = Double.parseDouble(d[8]);
+                reservas.add(r);
+            } catch (Exception e) {
+                System.out.println("Línea mala en reservas.txt: " + linea);
+            }
+        }
+        return reservas;
+    }
+
+    public static void guardarReservas(List<Reserva> reservas) {
+        List<String> lineas = new ArrayList<>();
+        for (Reserva r : reservas) {
+            lineas.add(r.id + "|" + r.documento + "|" + r.placa + "|" + r.inicio + "|" + r.fin + "|"
+                    + r.extras + "|" + r.costo + "|" + r.estado + "|" + r.multa);
+        }
+        escribirLineas(ARCHIVO_RESERVAS, lineas);
+    }
 }
