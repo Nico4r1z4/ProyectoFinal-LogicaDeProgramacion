@@ -37,7 +37,7 @@ public class VehiculosView extends VerticalLayout {
         grid.addColumn(v -> v.tipo).setHeader("Tipo");
         grid.addColumn(v -> "$" + v.tarifa).setHeader("Tarifa/dia");
         grid.addColumn(v -> v.estado).setHeader("Estado");
-        grid.addComponentColumn(v -> new Button("Editar", e -> abrirFormulario(v))).setHeader("Acciones");
+        grid.addComponentColumn(v -> crearBotones(v)).setHeader("Acciones");
 
         buscar.setPlaceholder("Buscar por placa o marca");
         buscar.setValueChangeMode(ValueChangeMode.EAGER);
@@ -160,6 +160,36 @@ public class VehiculosView extends VerticalLayout {
         Button btnCancelar = new Button("Cancelar", e -> dialogo.close());
 
         dialogo.getFooter().add(btnCancelar, btnGuardar);
+        dialogo.open();
+    }
+
+    public HorizontalLayout crearBotones(Vehiculos v) {
+        Button btnEditar = new Button("Editar", e -> abrirFormulario(v));
+        Button btnEliminar = new Button("Eliminar", e -> confirmarEliminar(v));
+        return new HorizontalLayout(btnEditar, btnEliminar);
+    }
+
+    public void confirmarEliminar(Vehiculos v) {
+        Dialog dialogo = new Dialog();
+        dialogo.setHeaderTitle("¿Eliminar el vehículo " + v.placa + "?");
+        dialogo.add(new Paragraph("Esta acción no se puede deshacer."));
+
+        Button btnCancelar = new Button("Cancelar", e -> dialogo.close());
+        Button btnConfirmar = new Button("Si eliminar", e -> {
+            List<Vehiculos> vehiculos = ArchivoUtil.leerVehiculos();
+            for (int i = 0; i < vehiculos.size(); i++) {
+                if (vehiculos.get(i).placa.equals(v.placa)) {
+                    vehiculos.remove(i);
+                    break;
+                }
+            }
+            ArchivoUtil.guardarVehiculos(vehiculos);
+            Notification.show("Vehículo eliminado");
+            dialogo.close();
+            cargarVehiculos();
+        });
+
+        dialogo.getFooter().add(btnCancelar, btnConfirmar);
         dialogo.open();
     }
 }
