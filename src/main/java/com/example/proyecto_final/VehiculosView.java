@@ -16,6 +16,8 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.details.Details;
+import com.vaadin.flow.component.html.Image;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +29,12 @@ public class VehiculosView extends VerticalLayout {
     public Grid<Vehiculos> grid = new Grid<>();
     public TextField buscar = new TextField();
     public ComboBox<String> filtroTipo = new ComboBox<>();
+    public Details ficha = new Details("Ficha del vehículo");
 
     public VehiculosView() {
         H2 titulo = new H2("Vehiculos");
 
+        grid.addComponentColumn(v -> crearFoto(v.foto, "100px")).setHeader("Foto");
         grid.addColumn(v -> v.placa).setHeader("Placa");
         grid.addColumn(v -> v.marca + " " + v.modelo).setHeader("Vehiculo");
         grid.addColumn(v -> v.anio).setHeader("Año");
@@ -38,6 +42,7 @@ public class VehiculosView extends VerticalLayout {
         grid.addColumn(v -> "$" + v.tarifa).setHeader("Tarifa/dia");
         grid.addColumn(v -> v.estado).setHeader("Estado");
         grid.addComponentColumn(v -> crearBotones(v)).setHeader("Acciones");
+        grid.addItemClickListener(e -> mostrarFicha(e.getItem()));
 
         buscar.setPlaceholder("Buscar por placa o marca");
         buscar.setValueChangeMode(ValueChangeMode.EAGER);
@@ -51,7 +56,8 @@ public class VehiculosView extends VerticalLayout {
 
         HorizontalLayout barra = new HorizontalLayout(buscar, filtroTipo, btnNuevo);
 
-        add(titulo, barra, grid);
+        ficha.add(new Paragraph("Haz clic en un vehículo de la tabla."));
+        add(titulo, barra, grid, ficha);
         cargarVehiculos();
     }
 
@@ -69,6 +75,23 @@ public class VehiculosView extends VerticalLayout {
             }
         }
         grid.setItems(resultado);
+    }
+
+    public Image crearFoto(String url, String ancho) {
+        Image foto = new Image(url, "Foto del vehículo");
+        foto.setWidth(ancho);
+        return foto;
+    }
+
+    public void mostrarFicha(Vehiculos v) {
+        ficha.setSummaryText("Ficha del vehículo " + v.placa);
+        ficha.removeAll();
+        ficha.add(crearFoto(v.foto, "300px"));
+        ficha.add(new Paragraph("Marca y modelo: " + v.marca + " " + v.modelo));
+        ficha.add(new Paragraph("Año: " + v.anio + "  |  Tipo: " + v.tipo));
+        ficha.add(new Paragraph("Tarifa por día: $" + v.tarifa));
+        ficha.add(new Paragraph("Estado: " + v.estado));
+        ficha.setOpened(true);
     }
 
     public void abrirFormulario(Vehiculos v) {
