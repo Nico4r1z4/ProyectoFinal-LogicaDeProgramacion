@@ -54,6 +54,7 @@ public class ReservasView extends VerticalLayout {
         grid.addColumn(r -> "$" + r.costo).setHeader("Costo");
         grid.addColumn(r -> "$" + r.multa).setHeader("Multa");
         grid.addColumn(r -> r.estado).setHeader("Estado");
+        grid.addComponentColumn(r -> crearBotonDevolver(r)).setHeader("Acciones");
 
         buscar.setPlaceholder("Buscar por placa o documento");
         buscar.setValueChangeMode(ValueChangeMode.EAGER);
@@ -211,6 +212,75 @@ public class ReservasView extends VerticalLayout {
             }
         }
         return texto;
+    }
+
+    public Button crearBotonDevolver(Reserva r) {
+        Button btnDevolver = new Button("Devolver", e -> abrirDevolucion(r));
+        if (!r.estado.equals("Activa")) {
+            btnDevolver.setEnabled(false);
+        }
+        return btnDevolver;
+    }
+
+    public void abrirDevolucion(Reserva r) {
+        Dialog dialogo = new Dialog();
+        dialogo.setHeaderTitle("Devolucion del vehiculo " + r.placa);
+
+        DatePicker fechaDevolucion = new DatePicker("Fecha de devolucion");
+        fechaDevolucion.setValue(LocalDate.now());
+
+        dialogo.add(new Paragraph("Debia devolverse el " + r.fin), fechaDevolucion,
+                new Paragraph("Si llega tarde se cobra 1.5 x tarifa por cada dia de retraso."));
+
+        Button btnConfirmar = new Button("Confirmar devolucion", e -> {
+            if (fechaDevolucion.isEmpty()) {
+                Notification.show("Elige la fecha de devolucion");
+                return;
+            }
+
+            int diasRetraso = (int) ChronoUnit.DAYS.between(r.fin, fechaDevolucion.getValue());
+            double multa = 0;
+            if (diasRetraso > 0) {
+                multa = diasRetraso * 1.5 * buscarTarifa(r.placa);
+            }
+
+            r.multa = multa;
+            r.estado = "Devuelta";
+            guardarCambio(r);
+            cambiarEstadoVehiculo(r.placa, "Disponible");
+
+            if (multa > 0) {
+                Notification.show("Llego " + diasRetraso + " dia(s) tarde. Multa: $" + multa);
+            } else {
+                Notification.show("Devuelto a tiempo, sin multa");
+            }
+            dialogo.close();
+            cargarReservas();
+        });
+        Button btnCancelar = new Button("Cancelar", e -> dialogo.close());
+
+        dialogo.getFooter().add(btnCancelar, btnConfirmar);
+        dialogo.open();
+    }
+
+    public void guardarCambio(Reserva cambiada) {
+        List<Reserva> reservas = ArchivoUtil.leerReservas();
+        for (int i = 0; i < reservas.size(); i++) {
+            if (reservas.get(i).id.equals(cambiada.id)) {
+                reservas.set(i, cambiada);
+            }
+        }
+        ArchivoUtil.guardarReservas(reservas);
+    }
+
+    public void cambiarEstadoVehiculo(String placa, String estado) {
+        List<Vehiculos> vehiculos = ArchivoUtil.leerVehiculos();
+        for (Vehiculos v : vehiculos) {
+            if (v.placa.equals(placa)) {
+                v.estado = estado;
+            }
+        }
+        ArchivoUtil.guardarVehiculos(vehiculos);
     }
 
 }
